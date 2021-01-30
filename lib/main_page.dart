@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -15,6 +16,21 @@ class MainPage extends ConsumerWidget {
     final _provider = watch(mainProvider);
     return Scaffold(
       backgroundColor: Colors.lightBlue[900],
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          if (_provider.isPlaying) {
+            _provider.isPlaying = false;
+            _provider.editable = true;
+          } else {
+            _provider.isPlaying = true;
+            _provider.editable = false;
+            _provider.mainLoop();
+          }
+        },
+        child: _provider.isPlaying
+            ? Icon(Icons.stop_rounded)
+            : Icon(Icons.play_arrow_rounded),
+      ),
       body: Stack(
         children: [
           CustomPaint(
@@ -22,67 +38,26 @@ class MainPage extends ConsumerWidget {
               basicLength: _provider.baseLength,
               height: _provider.height,
               width: _provider.width,
-              cells: _provider.cells,
+              cells: _provider.cellList,
             ),
           ),
           GestureDetector(
+            dragStartBehavior: DragStartBehavior.down,
             onTapDown: (details) {
-              _provider.ivertCells(
-                _provider.positionToIndex(details.localPosition),
+              if (_provider.editable) {
+                _provider.ivertCells(
+                  _provider.positionToIndex(details.localPosition),
+                );
+              }
+            },
+            onPanUpdate: (detail) {
+              _provider.generateCells(
+                _provider.positionToIndex(detail.localPosition),
               );
             },
           )
         ],
       ),
     );
-    // body: Column(
-    //   children: [
-    //     for (var y = 0; y < _height; y++)
-    //       Row(
-    //         children: [
-    //           for (var x = 0; x < _width; x++)
-    //             InkWell(
-    //               onTap: () {
-    //                 _provider.ivertCells(y * _width + x);
-    //               },
-    //               child: Container(
-    //                 height: 10,
-    //                 width: 10,
-    //                 color: _provider.cells[y * _width + x]
-    //                     ? Colors.yellow
-    //                     : Colors.white,
-    //               ),
-    //             )
-    //         ],
-    //       ),
-    //   ],
-    // ),
-    //   body: GridView.builder(
-    //     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-    //         childAspectRatio: 1 / 1, crossAxisCount: _provider.width),
-    //     itemCount: _provider.width * _provider.height,
-    //     itemBuilder: (context, index) {
-    //       return InkWell(
-    //         onTap: () {
-    //           if (_provider.editable) {
-    //             _provider.ivertCells(index);
-    //           }
-    //         },
-    //         child: Container(
-    //           width: 5,
-    //           height: 5,
-    //           decoration: BoxDecoration(
-    //             border: Border.all(
-    //               color: Colors.black,
-    //               width: 0.2,
-    //             ),
-    //             color:
-    //                 _provider.cells[index] ? Colors.yellow : Colors.transparent,
-    //           ),
-    //         ),
-    //       );
-    //     },
-    //   ),
-    // );
   }
 }
