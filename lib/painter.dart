@@ -30,30 +30,7 @@ class Painter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint();
-
-    // /// draw grid
-    // paint.strokeWidth = .5;
-
-    // // draw vertical grid
-    // for (var index = 0; index <= width; index++) {
-    //   canvas.drawLine(
-    //     Offset(basicLength * index, 0),
-    //     Offset(basicLength * index, basicLength * height),
-    //     paint,
-    //   );
-    // }
-
-    // // draw horizontal grid
-    // for (var index = 0; index <= height; index++) {
-    //   canvas.drawLine(
-    //     Offset(basicLength * 0, basicLength * index),
-    //     Offset(basicLength * width, basicLength * index),
-    //     paint,
-    //   );
-    // }
-
-    paint
+    final paint = Paint()
       ..style = PaintingStyle.fill
       ..color = Colors.yellow[700];
 
