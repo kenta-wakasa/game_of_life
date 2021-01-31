@@ -51,7 +51,7 @@ class MainPage extends ConsumerWidget {
                     _provider.isPlaying ? Colors.grey : Colors.blue,
                 onPressed: () {
                   if (!_provider.isPlaying) {
-                    _provider.clearCells();
+                    _provider.clearCellList();
                   }
                 },
                 child: const Icon(Icons.cleaning_services_rounded),
@@ -103,16 +103,14 @@ class MainPage extends ConsumerWidget {
                     if (_provider.editable) {
                       _provider
                         ..setCellListWhenTapDown()
-                        ..ivertCells(
-                          _provider.positionToIndex(details.localPosition),
-                        );
+                        ..invertCell(
+                            _provider.positionToIndex(details.localPosition));
                     }
                   },
                   onPanUpdate: (details) {
                     if (_provider.editable) {
-                      _provider.ivertCells(
-                        _provider.positionToIndex(details.localPosition),
-                      );
+                      _provider.invertCell(
+                          _provider.positionToIndex(details.localPosition));
                     }
                   },
                 )

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:game_of_life/cell.dart';
 
 class Painter extends CustomPainter {
   Painter({
@@ -10,15 +11,15 @@ class Painter extends CustomPainter {
   double basicLength; // 1 グリッドの長さ
   int width;
   int height;
-  List<bool> cells;
+  List<Cell> cells;
 
-  void paintCells(Canvas canvas, Paint paint, List<bool> cells) {
-    for (var index = 0; index < cells.length; index++) {
-      if (cells[index]) {
+  void paintCells(Canvas canvas, Paint paint, List<Cell> cells) {
+    for (final cell in cells) {
+      if (cell.alive) {
         canvas.drawRect(
           Rect.fromLTWH(
-            basicLength * (index % width),
-            basicLength * (index ~/ width),
+            basicLength * cell.pos.x,
+            basicLength * cell.pos.y,
             basicLength,
             basicLength,
           ),
