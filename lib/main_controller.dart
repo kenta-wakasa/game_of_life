@@ -2,58 +2,79 @@ import 'package:flutter/material.dart';
 
 class MainController extends ChangeNotifier {
   MainController({
-    this.baseLength = 16.0,
-    this.width = 200,
-    this.height = 200,
+    this.baseLength = 20.0,
+    this.width = 100,
+    this.height = 60,
   }) {
     _cellList = List.generate(width * height, (index) => false);
+
     editable = true;
-    waitTimeMS = 500;
+    _generations = 0;
+    _waitTimeMS = 1000;
     isPlaying = false;
+    start = true;
   }
-  final baseLength;
-  final width;
-  final height;
-  List<bool> _cellList;
-  List<bool> get cellList => _cellList;
-
-  int waitTimeMS;
-  bool editable;
-  bool isPlaying;
-
-  Future<void> mainLoop() async {
-    while (isPlaying) {
-      _countLivingCellsAroundMe();
-      notifyListeners();
-      await Future.delayed(Duration(milliseconds: waitTimeMS));
-    }
+  final double baseLength;
+  final int width;
+  final int height;
+  int _generations;
+  String get generations => _generations.toString().padLeft(8, '0');
+  int _waitTimeMS;
+  int get waitTimeMS => _waitTimeMS;
+  set waitTimeMS(int newWaiTimeMs) {
+    _waitTimeMS = newWaiTimeMs;
     notifyListeners();
   }
+
+  List<bool> _cellList;
+  List<bool> get cellList => _cellList;
+  List<bool> _cellListWhenTapDown;
+  bool editable;
+  bool isPlaying;
+  bool start;
 
   int positionToIndex(Offset offset) =>
       offset.dx ~/ baseLength + offset.dy ~/ baseLength * width;
 
   Offset indexToPosition(int index) =>
-      Offset(index % width, (index ~/ width).toDouble());
+      Offset((index % width).toDouble(), (index ~/ width).toDouble());
 
   @override
   void dispose() {
     super.dispose();
+    start = false;
+  }
+
+  Future<void> mainLoop() async {
+    isPlaying = true;
+    while (start) {
+      _countLivingCellsAroundMe();
+      notifyListeners();
+      _generations++;
+      await Future<void>.delayed(Duration(milliseconds: _waitTimeMS));
+    }
+    isPlaying = false;
+    notifyListeners();
+  }
+
+  void clearCells() {
+    _generations = 0;
+    _cellList = List.generate(width * height, (index) => false);
+    notifyListeners();
+  }
+
+  void setCellListWhenTapDown() {
+    _cellListWhenTapDown = List.from(_cellList);
   }
 
   /// 指定した [index] の bool を反転させる
-  ivertCells(int index) {
-    _cellList[index] = !_cellList[index];
+  void ivertCells(int index) {
+    _cellList[index] = !_cellListWhenTapDown[index];
     notifyListeners();
   }
 
-  /// 指定した [index] の bool をtrueにする
-  generateCells(int index) {
-    _cellList[index] = true;
-    notifyListeners();
-  }
-
-  int _checkCells(List<int> indexList) {
+  /// 与えられた indexList をもとに true の数を求める
+  int _countLivingCells(List<int> indexList) {
     var count = 0;
     for (final index in indexList) {
       if (index > -1 && index < cellList.length) {
@@ -65,10 +86,12 @@ class MainController extends ChangeNotifier {
     return count;
   }
 
+  /// すべての cells に対して周囲 8 マス の true 数を数え
+  /// それに応じて自分の生死を決める。
   void _countLivingCellsAroundMe() {
-    final List<bool> list = List.from(cellList);
+    final list = List<bool>.from(cellList);
     for (var index = 0; index < cellList.length; index++) {
-      int count = 0;
+      var count = 0;
 
       /// 左端の処理
       if (index % width == 0) {
@@ -79,10 +102,11 @@ class MainController extends ChangeNotifier {
           index + 1,
           index + 1 + width,
         ];
-        count = _checkCells(indexList);
+        count = _countLivingCells(indexList);
+      }
 
-        /// 右端の処理
-      } else if ((index % width) == (width - 1)) {
+      /// 右端の処理
+      else if ((index % width) == (width - 1)) {
         final indexList = <int>[
           index - 1 - width,
           index - 1,
@@ -90,10 +114,11 @@ class MainController extends ChangeNotifier {
           index + width,
           index - width,
         ];
-        count = _checkCells(indexList);
+        count = _countLivingCells(indexList);
+      }
 
-        /// それ以外
-      } else {
+      /// 通常の場合
+      else {
         final indexList = <int>[
           index - 1 - width,
           index - 1,
@@ -104,7 +129,7 @@ class MainController extends ChangeNotifier {
           index + 1,
           index + 1 + width,
         ];
-        count = _checkCells(indexList);
+        count = _countLivingCells(indexList);
       }
 
       /// 誕生
@@ -117,17 +142,10 @@ class MainController extends ChangeNotifier {
         list[index] = true;
       }
 
-      /// 過疎
-      else if (cellList[index] && count < 2) {
-        list[index] = false;
-      } else {
+      /// 過疎, 過密
+      else {
         list[index] = false;
       }
-
-      /// 過密
-      // else if (cellList[index] && count > 3) {
-      //   cellList[index] = false;
-      // }
     }
     _cellList = list;
   }

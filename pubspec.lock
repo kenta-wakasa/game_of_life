@@ -102,6 +102,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.8.0-nullsafety.3"
+  pedantic_mono:
+    dependency: "direct dev"
+    description:
+      name: pedantic_mono
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.10.0+3"
   riverpod:
     dependency: transitive
     description:
@@ -129,7 +136,7 @@ packages:
     source: hosted
     version: "1.10.0-nullsafety.6"
   state_notifier:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: state_notifier
       url: "https://pub.dartlang.org"
